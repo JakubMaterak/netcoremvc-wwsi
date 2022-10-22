@@ -12,9 +12,11 @@ namespace Library.ConsoleApp
     {
         private const string MENU_PROMPT = "add - dodaj pozycje do zamowienia\nend - zamknij zamowienie";
         private readonly OrdersRepository _ordersRepository;
-        public OrdersService(OrdersRepository ordersRepository)
+        private readonly BooksRepository _booksRepository;
+        public OrdersService(OrdersRepository ordersRepository, BooksRepository booksRepository)
         {
             _ordersRepository = ordersRepository;
+            _booksRepository = booksRepository;
         }
 
         public void PlaceOrder()
@@ -30,7 +32,10 @@ namespace Library.ConsoleApp
                 {
                     case "add":
                         var bookOrdered = CreateOrderdBookFromInput();
-                        order.BooksOrderedList.Add(bookOrdered);
+                        if (bookOrdered.NumerOrdered > 0)
+                        {
+                            order.BooksOrderedList.Add(bookOrdered);
+                        }
                         break;
 
                     case "end":
@@ -48,8 +53,26 @@ namespace Library.ConsoleApp
 
         private BookOrdered CreateOrderdBookFromInput()
         {
-            int bookId = ConsoleHelper.PromptNonnegativeInt("Id książki:");
-            int orderAmount = ConsoleHelper.PromptNonnegativeInt("Ilość:");
+            var books = _booksRepository.GetAll();
+            int bookId;
+            while (true)
+            {
+                bookId = ConsoleHelper.PromptNonnegativeInt("Id książki:");
+                if (bookId < books.Count)
+                {
+                    break;
+                }
+                Console.WriteLine("Książka o takim ID nie istnieje w repozytorium");
+            }
+            int orderAmount;
+            while (true)
+            {
+                orderAmount = ConsoleHelper.PromptNonnegativeInt("Ilość:");
+                if (orderAmount <= books[bookId].ProductsAvailable) {
+                    break;
+                }
+                Console.WriteLine("Nie można zamówić więcej kopii danej książek niż jest w repozytorium");
+            }
             return new(bookId, orderAmount);
         }
 

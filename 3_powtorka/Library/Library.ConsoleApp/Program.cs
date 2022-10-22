@@ -26,7 +26,7 @@ internal class Program
         BooksService booksService = new(booksRepository);
 
         OrdersRepository ordersRepository = new();
-        OrdersService ordersService = new(ordersRepository);
+        OrdersService ordersService = new(ordersRepository, booksRepository);
         string inputLine;
         while (true)
         {
